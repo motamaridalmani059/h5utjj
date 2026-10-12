@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin Panel · 13X1 HOST</title>
+  <style>
+    :root{--bg:#05060a;--muted:#99a3ad;--accent:#d4af37;--border:rgba(255,255,255,.10);--card:rgba(255,255,255,.06);--shadow:0 18px 60px rgba(0,0,0,.55);--danger:#ff6b6b;--ok:#7CFF7C;--warn:#ffd166}
+    *{box-sizing:border-box}
+    body{
+      margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;color:rgba(255,255,255,.92);
+      background:
+        radial-gradient(1200px 600px at 10% 10%, rgba(212,175,55,.25), transparent 60%),
+        radial-gradient(900px 500px at 90% 20%, rgba(139,0,0,.22), transparent 55%),
+        linear-gradient(180deg,#070a12,#05060a);
+    }
+    .top{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:rgba(0,0,0,.35);backdrop-filter:blur(14px);position:sticky;top:0}
+    .logo{font-weight:950;letter-spacing:1px;color:var(--accent);text-transform:uppercase}
+    .btn{padding:10px 14px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:white;font-weight:900;cursor:pointer}
+    .btn:hover{background:rgba(255,255,255,.09)}
+    .btn-accent{border:0;background:linear-gradient(135deg, rgba(212,175,55,.95), rgba(139,0,0,.85));color:#140a00}
+    .wrap{max-width:1200px;margin:22px auto;padding:0 20px}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    @media (max-width: 900px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width: 520px){.grid{grid-template-columns:1fr}}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow);backdrop-filter:blur(16px)}
+    .k{color:var(--muted);font-size:12px}
+    .v{font-size:20px;font-weight:950;margin-top:6px}
+    h2{margin:22px 0 10px}
+    table{width:100%;border-collapse:collapse;background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);backdrop-filter:blur(14px)}
+    th,td{padding:12px 10px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;font-size:13px}
+    th{color:rgba(255,255,255,.78);text-transform:uppercase;letter-spacing:.5px;font-size:11px}
+    .tag{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.10);font-weight:900;font-size:11px}
+    .tag.ok{color:var(--ok)} .tag.bad{color:var(--danger)} .tag.mid{color:var(--warn)}
+    .actions button{margin-right:6px;margin-top:4px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+    input{padding:10px;border-radius:12px;border:1px solid var(--border);background:rgba(0,0,0,.35);color:#e9f2f7;outline:none}
+    .msg{margin-top:10px;color:var(--muted);font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div class="logo">13X1 HOST · Admin Panel</div>
+    <div style="display:flex;gap:10px">
+      <button class="btn" onclick="location.href='/'">Panel</button>
+      <button class="btn" onclick="location.href='/logout'">Logout</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="grid">
+      <div class="card"><div class="k">Servers Total</div><div class="v" id="st_total">0</div></div>
+      <div class="card"><div class="k">Running</div><div class="v" id="st_run">0</div></div>
+      <div class="card"><div class="k">Installing/Starting</div><div class="v" id="st_ins">0</div></div>
+      <div class="card"><div class="k">Banned Servers</div><div class="v" id="st_ban">0</div></div>
+    </div>
+
+    <div class="grid" style="margin-top:12px">
+      <div class="card"><div class="k">Users Total</div><div class="v" id="u_total">0</div></div>
+      <div class="card"><div class="k">Active Users</div><div class="v" id="u_active">0</div></div>
+      <div class="card"><div class="k">Premium Users</div><div class="v" id="u_premium">0</div></div>
+      <div class="card"><div class="k">Rules</div><div class="v" style="font-size:13px">Normal=1 server<br>Premium=1000 servers</div></div>
+    </div>
+
+    <div class="grid" style="margin-top:12px">
+      <div class="card"><div class="k">🛡 Blocked Requests</div><div class="v" id="sec_blocked">0</div></div>
+      <div class="card"><div class="k">⛔ IPs Auto-Banned</div><div class="v" id="sec_banned">0</div></div>
+      <div class="card"><div class="k">🖥 Host CPU</div><div class="v" id="host_cpu">0%</div></div>
+      <div class="card"><div class="k">🧠 Host RAM</div><div class="v" id="host_ram">0%</div></div>
+    </div>
+
+    <div class="row">
+      <button class="btn btn-accent" onclick="refreshAll()">Refresh</button>
+      <span class="msg" id="msg"></span>
+    </div>
+
+    <div class="row">
+      <button class="btn" style="border-color:rgba(124,255,124,.4);color:var(--ok)" onclick="setSignup(true)">✅ Enable New Accounts</button>
+      <button class="btn" style="border-color:rgba(193,18,31,.5);color:#ff8a8a" onclick="setSignup(false)">🛑 Disable New Accounts</button>
+      <span class="msg" id="signupMsg">Signups: ...</span>
+    </div>
+
+    <div class="row">
+      <button class="btn" style="border-color:rgba(255,209,102,.55);color:var(--warn)" onclick="setMaintenance(true)">🛠 Enable Maintenance Mode</button>
+      <button class="btn" style="border-color:rgba(124,255,124,.4);color:var(--ok)" onclick="setMaintenance(false)">✅ Disable Maintenance Mode</button>
+      <span class="msg" id="mntMsg">Maintenance: ...</span>
+    </div>
+
+    <div class="row">
+      <button class="btn btn-accent" onclick="premiumAll(true)">⭐ Premium ALL Users</button>
+      <button class="btn" style="border-color:rgba(193,18,31,.5);color:#ff8a8a" onclick="premiumAll(false)">❌ Remove Premium From ALL</button>
+      <button class="btn" style="border-color:rgba(255,107,107,.35);color:var(--danger)" onclick="stopAll()">⛔ Stop ALL Servers</button>
+    </div>
+
+    <div class="row">
+      <input id="annIn" placeholder="📢 Announcement shown to all users..." style="flex:1;min-width:220px">
+      <button class="btn btn-accent" onclick="setAnnouncement()">Publish</button>
+      <button class="btn" onclick="clearAnnouncement()">Clear</button>
+    </div>
+    <div class="msg" id="sec_ips">No active IP bans</div>
+
+    <h2>Servers</h2>
+    <table>
+      <thead><tr><th>Folder</th><th>Name</th><th>Owner</th><th>Main</th><th>Status</th><th>Ban</th></tr></thead>
+      <tbody id="serversT"></tbody>
+    </table>
+
+    <h2 style="margin-top:26px">Users</h2>
+    <div class="row"><input id="searchUser" placeholder="search username..." oninput="filterUsers()"></div>
+    <table>
+      <thead><tr><th>Username</th><th>Email</th><th>Servers</th><th>Active</th><th>Premium</th><th>Actions</th></tr></thead>
+      <tbody id="usersT"></tbody>
+    </table>
+
+    <div class="msg">Admin can ban/unban users and set premium.</div>
+  </div>
+
+<script>
+let usersCache = [];
+
+function tagStatus(s){
+  const st=(s||'').toLowerCase();
+  if(st==='running') return '<span class="tag ok">RUNNING</span>';
+  if(st==='installing'||st==='starting') return '<span class="tag mid">INSTALLING</span>';
+  if(st==='banned') return '<span class="tag bad">BANNED</span>';
+  return '<span class="tag">OFFLINE</span>';
+}
+
+async function refreshStats(){
+  const r=await fetch('/api/admin/quickstats');
+  const d=await r.json();
+  const s=d.stats||{};
+  st_total.textContent=s.servers_total||0;
+  st_run.textContent=s.servers_running||0;
+  st_ins.textContent=s.servers_installing||0;
+  st_ban.textContent=s.servers_banned||0;
+  u_total.textContent=s.users_total||0;
+  u_active.textContent=s.users_active||0;
+  u_premium.textContent=s.users_premium||0;
+  document.getElementById('host_cpu').textContent=(s.host_cpu||0)+'%';
+  document.getElementById('host_ram').textContent=(s.host_ram||0)+'%';
+}
+
+async function refreshServers(){
+  const r=await fetch('/api/admin/servers');
+  const d=await r.json();
+  const t=document.getElementById('serversT'); t.innerHTML='';
+  (d.servers||[]).forEach(s=>{
+    t.innerHTML += `
+      <tr>
+        <td>${s.folder}</td>
+        <td>${s.display_name}</td>
+        <td>${s.owner}</td>
+        <td>${s.startup_file || ''}</td>
+        <td>${tagStatus(s.status)}</td>
+        <td class="actions">
+          ${s.banned
+            ? `<button class="btn" onclick="banServer('${s.key}', false)">Unban</button>`
+            : `<button class="btn" style="border-color:rgba(255,107,107,.35);color:var(--danger)" onclick="banServer('${s.key}', true)">Ban</button>`}
+        </td>
+      </tr>`;
+  });
+}
+
+async function banServer(key, banned){
+  await fetch('/api/admin/server/ban',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key,banned})});
+  refreshServers();
+}
+
+async function refreshUsers(){
+  const r=await fetch('/api/admin/users');
+  const d=await r.json();
+  usersCache=d.users||[];
+  renderUsers(usersCache);
+}
+
+function renderUsers(arr){
+  const t=document.getElementById('usersT'); t.innerHTML='';
+  arr.forEach(u=>{
+    t.innerHTML += `
+      <tr>
+        <td>${u.username}</td>
+        <td>${u.email || ''}</td>
+        <td>${u.servers}</td>
+        <td>${u.active ? '<span class="tag ok">ACTIVE</span>' : '<span class="tag bad">BANNED</span>'}</td>
+        <td>${u.premium ? '<span class="tag ok">PREMIUM</span>' : '<span class="tag">NORMAL</span>'}</td>
+        <td class="actions">
+          <button class="btn" onclick="setActive('${u.username}', ${u.active ? 'false':'true'})">${u.active ? 'Ban' : 'Unban'}</button>
+          <button class="btn" onclick="setPremium('${u.username}', ${u.premium ? 'false':'true'})">${u.premium ? 'Remove Premium' : 'Make Premium'}</button>
+          <button class="btn" style="border-color:rgba(255,107,107,.5);color:var(--danger)" onclick="deleteUser('${u.username}')">Delete</button>
+        </td>
+      </tr>`;
+  });
+}
+
+async function setActive(username, active){
+  await fetch('/api/admin/user/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,active})});
+  refreshUsers(); refreshStats();
+}
+async function setPremium(username, premium){
+  await fetch('/api/admin/user/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,premium})});
+  refreshUsers(); refreshStats();
+}
+function filterUsers(){
+  const q=(document.getElementById('searchUser').value||'').toLowerCase().trim();
+  if(!q) return renderUsers(usersCache);
+  renderUsers(usersCache.filter(u => (u.username||'').toLowerCase().includes(q)));
+}
+
+async function refreshAll(){
+  document.getElementById('msg').textContent='Refreshing...';
+  await Promise.all([refreshStats(), refreshServers(), refreshUsers()]);
+  document.getElementById('msg').textContent='Done ✅';
+}
+async function refreshSignup(){
+  try{
+    const r=await fetch('/api/admin/signup-toggle'); const d=await r.json();
+    document.getElementById('signupMsg').textContent = d.signup_enabled ? 'Signups: ENABLED ✅' : 'Signups: DISABLED 🛑';
+  }catch(e){}
+}
+async function setSignup(enabled){
+  await fetch('/api/admin/signup-toggle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled})});
+  refreshSignup();
+}
+async function refreshMaintenance(){
+  try{
+    const r=await fetch('/api/admin/maintenance'); const d=await r.json();
+    document.getElementById('mntMsg').textContent = d.maintenance_mode ? 'Maintenance: ON 🛠' : 'Maintenance: OFF ✅';
+  }catch(e){}
+}
+async function setMaintenance(enabled){
+  await fetch('/api/admin/maintenance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled})});
+  refreshMaintenance();
+}
+async function premiumAll(premium){
+  if(!confirm(premium ? '⭐ Give PREMIUM to ALL users?' : '❌ REMOVE premium from ALL users?')) return;
+  const r=await fetch('/api/admin/premium-all',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({premium})});
+  const d=await r.json().catch(()=>({}));
+  document.getElementById('msg').textContent = d.success ? `Updated ${d.updated}/${d.total} users ✅` : 'Failed';
+  refreshUsers(); refreshStats();
+}
+async function stopAll(){
+  if(!confirm('⛔ Stop ALL running servers?')) return;
+  const r=await fetch('/api/admin/stop-all',{method:'POST'});
+  const d=await r.json().catch(()=>({}));
+  document.getElementById('msg').textContent = d.success ? `Stopped ${d.stopped} servers ⛔` : 'Failed';
+  refreshAll();
+}
+async function deleteUser(username){
+  if(!confirm(`⚠ Delete user "${username}" permanently? Their servers will be stopped.`)) return;
+  await fetch('/api/admin/user/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username})});
+  refreshUsers(); refreshStats();
+}
+async function refreshSecurity(){
+  try{
+    const r=await fetch('/api/admin/security'); const d=await r.json();
+    sec_blocked.textContent=d.blocked_requests||0;
+    sec_banned.textContent=d.ips_banned_total||0;
+    const el=document.getElementById('sec_ips');
+    const bans=d.banned_ips||[];
+    el.innerHTML = bans.length
+      ? '🚫 Active bans: ' + bans.map(b=>`${b.ip} (${b.remaining}s) <a href="javascript:void(0)" style="color:var(--ok);font-weight:900" onclick="unbanIp('${b.ip}')">unban</a>`).join(' · ')
+      : 'No active IP bans ✅';
+  }catch(e){}
+}
+async function unbanIp(ip){
+  await fetch('/api/admin/ip/unban',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip})});
+  refreshSecurity();
+}
+async function setAnnouncement(){
+  const text=document.getElementById('annIn').value;
+  await fetch('/api/admin/announcement',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
+  document.getElementById('msg').textContent='Announcement published 📢';
+}
+async function clearAnnouncement(){
+  document.getElementById('annIn').value='';
+  await fetch('/api/admin/announcement',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:''})});
+  document.getElementById('msg').textContent='Announcement cleared';
+}
+document.addEventListener('DOMContentLoaded', ()=>{refreshAll();refreshSignup();refreshMaintenance();refreshSecurity();setInterval(refreshSecurity,10000);});
+</script>
+</body>
+</html>

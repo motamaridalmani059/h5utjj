@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Create Account · 13X1 HOST</title>
+  <style>
+    :root{--bg:#060812;--glass:rgba(255,255,255,.07);--b:rgba(255,255,255,.14);--t:rgba(255,255,255,.92);--m:rgba(255,255,255,.65);--a:#d4af37;--a2:#8b0000}
+    *{box-sizing:border-box} body{margin:0;min-height:100vh;display:grid;place-items:center;color:var(--t);
+      font-family:system-ui,Segoe UI,Roboto,Arial;background:
+      radial-gradient(900px 500px at 10% 10%, rgba(212,175,55,.22), transparent 60%),
+      radial-gradient(800px 500px at 90% 20%, rgba(139,0,0,.18), transparent 55%),
+      linear-gradient(180deg,#070a12,#05060a);
+    }
+    .card{width:min(460px,92vw);border:1px solid var(--b);background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.04));
+      border-radius:18px;backdrop-filter:blur(16px);box-shadow:0 18px 60px rgba(0,0,0,.55);padding:18px}
+    .title{display:flex;align-items:center;gap:10px;font-weight:950;letter-spacing:.6px;text-transform:uppercase}
+    .logo{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
+      background:radial-gradient(circle at 30% 30%, rgba(212,175,55,.9), transparent 60%),
+               radial-gradient(circle at 70% 70%, rgba(139,0,0,.7), transparent 55%),
+               rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.14)
+    }
+    .sub{margin-top:6px;color:var(--m);font-size:12px}
+    input{width:100%;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.35);color:var(--t);outline:none;margin-top:10px}
+    .row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+    .btn{flex:1;padding:12px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:var(--t);font-weight:900;cursor:pointer}
+    .btn.primary{border:0;color:#140a00;background:linear-gradient(135deg,rgba(212,175,55,.95),rgba(139,0,0,.85))}
+    .msg{margin-top:10px;color:var(--m);font-size:12px;min-height:16px}
+    a{color:var(--a);text-decoration:none;font-weight:900}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="title"><div class="logo">✨</div> Create Account</div>
+    <div class="sub">Normal User Get Only 1 Server Free , Want more DM TG @l9irch_13x1</div>
+
+    <input id="u" placeholder="Username (letters/numbers/_/.)">
+    <input id="e" placeholder="Email">
+    <input id="p" placeholder="Password (min 6)" type="password">
+    <input id="p2" placeholder="Re-enter password" type="password">
+
+    <div class="row">
+      <button class="btn primary" onclick="doCreate()">Create</button>
+      <button class="btn" onclick="location.href='/login'">Back to Login</button>
+    </div>
+
+    <div class="msg" id="m"></div>
+  </div>
+
+<script>
+(async()=>{try{const r=await fetch('/api/signup-status');const d=await r.json();if(!d.signup_enabled){document.getElementById('m').textContent='🛑 New account creation is currently disabled by the owner';}}catch(e){}})();
+async function doCreate(){
+  const m=document.getElementById('m');
+  m.textContent='Creating...';
+  const username=document.getElementById('u').value.trim();
+  const email=document.getElementById('e').value.trim();
+  const password=document.getElementById('p').value;
+  const password2=document.getElementById('p2').value;
+
+  const r=await fetch('/api/auth/create',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username,email,password,password2})
+  });
+  const d=await r.json().catch(()=>({success:false,message:'Server error'}));
+  if(!r.ok || !d.success){ m.textContent=d.message||'Create failed'; return; }
+  m.textContent='Created ✅ Redirecting to login...';
+  setTimeout(()=>location.href='/login', 800);
+}
+</script>
+</body>
+</html>

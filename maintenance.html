@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Maintenance · 13X1 HOST</title>
+  <style>
+    body{margin:0;min-height:100vh;display:grid;place-items:center;color:rgba(255,255,255,.92);
+      font-family:system-ui,Segoe UI,Roboto,Arial;text-align:center;
+      background:
+      radial-gradient(900px 500px at 10% 10%, rgba(212,175,55,.22), transparent 60%),
+      radial-gradient(800px 500px at 90% 20%, rgba(139,0,0,.18), transparent 55%),
+      linear-gradient(180deg,#070a12,#05060a);}
+    .card{width:min(480px,92vw);border:1px solid rgba(255,255,255,.14);
+      background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.04));
+      border-radius:18px;backdrop-filter:blur(16px);box-shadow:0 18px 60px rgba(0,0,0,.55);padding:28px}
+    .ico{font-size:56px}
+    h1{margin:12px 0 6px;color:#d4af37;letter-spacing:1px;text-transform:uppercase}
+    p{color:rgba(255,255,255,.65);font-size:13px;line-height:1.6}
+    .spin{margin:16px auto 0;width:34px;height:34px;border-radius:50%;
+      border:3px solid rgba(255,255,255,.15);border-top-color:#d4af37;animation:sp 1s linear infinite}
+    @keyframes sp{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="ico">🛠️</div>
+    <h1>Under Maintenance</h1>
+    <p>The panel is temporarily down for maintenance by the owner.<br>
+    Please check back soon — this page refreshes automatically.</p>
+    <div class="spin"></div>
+  </div>
+<script>
+setInterval(async()=>{
+  try{
+    const r=await fetch('/api/announcement');
+    const d=await r.json();
+    if(!d.maintenance_mode) location.href='/';
+  }catch(e){}
+},15000);
+</script>
+</body>
+</html>ml>
